@@ -10,7 +10,7 @@ void compress(FILE* out, FILE* in, const char * name) {
 	int count;
 	int32_t fileSz = 0, nameSz = 0;
 	//writing the header
-	//1: Size of file name (2 bytes)
+	//1: Size of file name (4 bytes)
 	nameSz = htonl(strlen(name));
 	fwrite(&nameSz, sizeof(int32_t), 1, out);
 	//2: File name
