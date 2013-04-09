@@ -14,10 +14,10 @@ struct _hash_table {
 	unsigned int(*hash)(void*);
 	int(*cmp)(void*,void*);
 	struct pair* slot;
-	int size;
+	unsigned int size;
 	int free_k;
 	int free_v;
-	int occupied;
+	unsigned int occupied;
 };
 
 hash_table ht_alloc(unsigned int(*hash)(void*), int(*cmp)(void*,void*), int free_k, int free_v) {
