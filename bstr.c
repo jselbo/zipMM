@@ -1,7 +1,7 @@
 #include "bstr.h"
 #include <stdlib.h>
 
-#define DEFAULT_SIZE 16
+#define DEFAULT_SIZE 1
 
 struct _bstr {
 	char* data;
@@ -55,7 +55,7 @@ int bstr_cmp(bstr a, bstr b) {
 void bstr_append(bstr s, char ch) {
 	int i;
 	char* newdata;
-	if(s->len + 1 >= s->rlen) {
+	if(s->len + 1 > s->rlen) {
 		newdata = malloc(s->rlen * 2);
 		for(i = 0; i < s->len; ++i) {
 			newdata[i] = s->data[i];
