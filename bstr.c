@@ -6,7 +6,6 @@
 struct _bstr {
 	char* data;
 	int len;
-	int flen;
 	int rlen;
 };
 
@@ -14,7 +13,6 @@ bstr bstr_alloc() {
 	bstr s = (bstr)malloc(sizeof(struct _bstr));
 	s->data = (char*)malloc(DEFAULT_SIZE);
 	s->len = 0;
-	s->flen = -1;
 	s->rlen = DEFAULT_SIZE;
 }
 
@@ -26,7 +24,6 @@ int bstr_len(bstr s) {
 int bstr_hash(bstr s) {
 	int hash = 5381;
 	int i;
-
 	for(i = 0; i < s->len; ++i) {
 		hash = ((hash << 5) + hash) + s->data[i];
 	}
@@ -55,28 +52,9 @@ int bstr_cmp(bstr a, bstr b) {
 	}
 }
 
-void bstr_part(bstr s, int len) {
-	if(len < s->len) {
-		if(s->flen == -1) {
-			s->flen = s->len;
-		}
-		s->len = len;
-	}
-}
-
-void bstr_rewind(bstr s) {
-	if(s->flen != -1) {
-		s->len = s->flen;
-		s->flen = -1;
-	}
-}
-
 void bstr_append(bstr s, char ch) {
 	int i;
 	char* newdata;
-	if(s->flen != -1) {
-		return;
-	}
 	if(s->len + 1 >= s->rlen) {
 		newdata = malloc(s->rlen * 2);
 		for(i = 0; i < s->len; ++i) {
