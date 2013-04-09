@@ -1,7 +1,7 @@
 #include "hash_table.h"
 #include <stdlib.h>
-
-#define DEFAULT_SIZE 256
+#include <stdio.h>
+#define DEFAULT_SIZE 512
 
 struct pair {
 	void* k;
@@ -24,6 +24,7 @@ hash_table ht_alloc(int(*hash)(void*), int(*cmp)(void*,void*), int free_k, int f
 	tbl->slot = (struct pair*)(calloc(DEFAULT_SIZE,sizeof(struct pair)));
 	tbl->free_k = free_k;
 	tbl->free_v = free_v;
+	tbl->size = DEFAULT_SIZE;
 }
 
 void* ht_lookup(hash_table tbl, void* k) {
@@ -42,14 +43,14 @@ void ht_insert(hash_table tbl, void* k, void* v) {
 		if(tbl->slot[key].k == NULL) {
 			tbl->slot[key].k = k;
 			tbl->slot[key].v = v;
-			break;
+			return;
 		}
 		else if(tbl->cmp(tbl->slot[key].k, k) == 0) {
+			printf("cmp success\n");
 			tbl->slot[key].v = v;
-			break;
+			return;
 		}
 	}
-	//reallocate table
 	old_slot = tbl->slot;
 	old_size = tbl->size;
 	tbl->slot = (struct pair*)calloc(tbl->size * 2, sizeof(struct pair));
@@ -60,6 +61,7 @@ void ht_insert(hash_table tbl, void* k, void* v) {
 			ht_insert(tbl, old_slot[i].k, old_slot[i].v);
 		}
 	}
+	ht_insert(tbl, k, v);
 	free(old_slot);
 }
 
