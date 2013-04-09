@@ -30,8 +30,13 @@ hash_table ht_alloc(int(*hash)(void*), int(*cmp)(void*,void*), int free_k, int f
 void* ht_lookup(hash_table tbl, void* k) {
 	int i, key = tbl->hash(k);
 	for(i = 0, key = (key + (i * i)) % tbl->size; i < tbl->size; ++i) {
-		if(tbl->slot[key].k != NULL && tbl->cmp(tbl->slot[key].k, k) == 0) {
-			return tbl->slot[key].v;
+		if(tbl->slot[key].k != NULL) {
+			if(tbl->cmp(tbl->slot[key].k, k) == 0) {
+				return tbl->slot[key].v;
+			}
+		}
+		else {
+			return NULL;
 		}
 	}
 }
@@ -46,7 +51,6 @@ void ht_insert(hash_table tbl, void* k, void* v) {
 			return;
 		}
 		else if(tbl->cmp(tbl->slot[key].k, k) == 0) {
-			printf("cmp success\n");
 			tbl->slot[key].v = v;
 			return;
 		}
@@ -68,13 +72,18 @@ void ht_insert(hash_table tbl, void* k, void* v) {
 void ht_remove(hash_table tbl, void* k) {
 	int i, key = tbl->hash(k);
 	for(i = 0, key = (key + i * i) % tbl->size; i < tbl->size; ++i) {
-		if(tbl->slot[key].k != NULL && tbl->cmp(tbl->slot[key].k, k) == 0) {
-			if(tbl->free_k)
-				free(tbl->slot[key].k);
-			if(tbl->free_v)
-				free(tbl->slot[key].v);
-			tbl->slot[key].k = NULL;
-			tbl->slot[key].v = NULL;
+		if(tbl->slot[key].k != NULL) {
+			if(tbl->cmp(tbl->slot[key].k, k) == 0) {
+				if(tbl->free_k)
+					free(tbl->slot[key].k);
+				if(tbl->free_v)
+					free(tbl->slot[key].v);
+				tbl->slot[key].k = NULL;
+				tbl->slot[key].v = NULL;
+				break;
+			}
+		}
+		else {
 			break;
 		}
 	}
