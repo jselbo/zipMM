@@ -32,7 +32,8 @@ void* ht_lookup(hash_table tbl, void* k) {
 }
 
 void ht_insert(hash_table tbl, void* k, void* v) {
-	int i, key = tbl->hash(k);
+	int i, key = tbl->hash(k), old_size;
+	struct pair* old_slot;
 	for(i = 0, key = (key + i * i) % tbl->size; i < tbl->size; ++i) {
 		if(tbl->slot[key].k == NULL) {
 			tbl->slot[key].k = k;
@@ -44,7 +45,18 @@ void ht_insert(hash_table tbl, void* k, void* v) {
 			break;
 		}
 	}
-	//increase table size and try again
+	//reallocate table
+	old_slot = tbl->slot;
+	old_size = tbl->size;
+	tbl->slot = (struct pair*)calloc(tbl->size * 2, sizeof(struct pair));
+	tbl->size *= 2;
+	//rehash the table
+	for(i = 0; i < old_size; ++i) {
+		if(old_slot[i].k != NULL) {
+			ht_insert(tbl, old_slot[i].k, old_slot[i].v);
+		}
+	}
+	free(old_slot);
 }
 
 void ht_remove(hash_table tbl, void* k) {
@@ -63,7 +75,8 @@ void ht_remove(hash_table tbl, void* k) {
 void ht_free(hash_table tbl) {
 	int i;
 	for(i = 0; i < tbl->size; ++i) {
-		free(tbl->slot + i);
+		free(tbl->slot[i].k);
+		free(tbl->slot[i].v);
 	}
 	free(tbl->slot);
 	free(tbl);
