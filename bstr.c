@@ -21,8 +21,8 @@ int bstr_len(bstr s) {
 }
 
 //copied from http://www.cse.yorku.ca/~oz/hash.html
-int bstr_hash(bstr s) {
-	int hash = 5381;
+unsigned int bstr_hash(bstr s) {
+	unsigned int hash = 5381;
 	int i;
 	for(i = 0; i < s->len; ++i) {
 		hash = ((hash << 5) + hash) + s->data[i];
