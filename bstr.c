@@ -33,8 +33,7 @@ unsigned int bstr_hash(void* ss) {
 	return hash;
 }
 
-int bstr_cmp(void* aa, void* bb) {
-	bstr a = (bstr)aa, b = (bstr)bb;
+int bstr_cmp(bstr a, bstr b) {
 	int i;
 	if(a->len != b->len)
 		return 1;
@@ -48,9 +47,12 @@ int bstr_cmp(void* aa, void* bb) {
 	}
 }
 
-void* bstr_copy(void* ss) {
+int bstr_cmp_ht(void* a, void* b) {
+	return bstr_cmp((bstr)a, (bstr)b);
+}
+
+bstr bstr_copy(bstr s) {
 	int i;
-	bstr s = (bstr)ss;
 	bstr ret = (bstr)malloc(sizeof(struct _bstr));
 	ret->data = (char*)malloc(s->rlen);
 	ret->rlen = s->rlen;
@@ -59,6 +61,10 @@ void* bstr_copy(void* ss) {
 		ret->data[i] = s->data[i];
 	}
 	return ret;
+}
+
+void* bstr_copy_ht(void* s) {
+	return bstr_copy((bstr)s);
 }
 
 void bstr_append(bstr s, char ch) {
