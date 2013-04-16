@@ -16,24 +16,28 @@ struct _hash_table {
 	unsigned int(*hash)(void*);
 	//key comparator function
 	int(*cmp)(void*,void*);
+	//key copy function
+	void*(*key_copy)(void*);
+	//key free function
+	void(*key_free)(void*);
 	//key value pair bucket
 	struct pair* slot;
 	//size of bucket
 	unsigned int size;
-	//whether or not we free keys and values
-	int free_k;
+	//whether or not we free values
 	int free_v;
 	//total number of occupied slots in the bucket
 	unsigned int occupied;
 };
 
 //allocate a hash table
-hash_table ht_alloc(unsigned int(*hash)(void*), int(*cmp)(void*,void*), int free_k, int free_v) {
+hash_table ht_alloc(unsigned int(*hash)(void*), int(*cmp)(void*,void*), void*(*key_copy)(void*), void(*key_free)(void*), int free_v) {
 	hash_table tbl = (hash_table)malloc(sizeof(struct _hash_table));
 	tbl->hash = hash;
 	tbl->cmp = cmp;
+	tbl->key_copy = key_copy;
+	tbl->key_free = key_free;
 	tbl->slot = (struct pair*)(calloc(DEFAULT_SIZE,sizeof(struct pair)));
-	tbl->free_k = free_k;
 	tbl->free_v = free_v;
 	tbl->size = DEFAULT_SIZE;
 	tbl->occupied = 0;
@@ -75,7 +79,7 @@ void ht_insert(hash_table tbl, void* k, void* v) {
 		KEY_INC(key, i, tbl->size);
 		//if the slot is empty or it is occupied by our key, put ourkey and value in
 		if(tbl->slot[key].k == NULL) {
-			tbl->slot[key].k = k;
+			tbl->slot[key].k = tbl->key_copy(k);
 			tbl->slot[key].v = v;
 			break;
 		}
@@ -132,8 +136,9 @@ void ht_remove(hash_table tbl, void* k) {
 void ht_free(hash_table tbl) {
 	int i;
 	for(i = 0; i < tbl->size; ++i) {
-		if(tbl->free_k)
-			free(tbl->slot[i].k);
+		if(tbl->slot[i].k != NULL) {
+			tbl->key_free(tbl->slot[i].k);
+		}
 		if(tbl->free_v)
 			free(tbl->slot[i].v);
 	}
