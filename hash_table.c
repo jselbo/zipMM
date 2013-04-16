@@ -5,21 +5,29 @@
 #define LOAD_FACTOR_THRESHOLD .75
 #define KEY_INC(K, I, M) K = ((K % M) + ((I % M) * (I % M)) % M) % M
 
+//key value pair
 struct pair {
 	void* k;
 	void* v;
 };
 
 struct _hash_table {
+	//hashing function
 	unsigned int(*hash)(void*);
+	//key comparator function
 	int(*cmp)(void*,void*);
+	//key value pair bucket
 	struct pair* slot;
+	//size of bucket
 	unsigned int size;
+	//whether or not we free keys and values
 	int free_k;
 	int free_v;
+	//total number of occupied slots in the bucket
 	unsigned int occupied;
 };
 
+//allocate a hash table
 hash_table ht_alloc(unsigned int(*hash)(void*), int(*cmp)(void*,void*), int free_k, int free_v) {
 	hash_table tbl = (hash_table)malloc(sizeof(struct _hash_table));
 	tbl->hash = hash;
@@ -31,10 +39,16 @@ hash_table ht_alloc(unsigned int(*hash)(void*), int(*cmp)(void*,void*), int free
 	tbl->occupied = 0;
 }
 
+/*
+ *Lookup a value with the given key in the hash table
+ */
 void* ht_lookup(hash_table tbl, void* k) {
 	unsigned int i, key = tbl->hash(k) % tbl->size;
+	//for every slot in the hash table
 	for(i = 0; i < tbl->size; ++i) {
+		//quadratic probe to the correct slot
 		KEY_INC(key, i, tbl->size);
+		//if the slot is not empty and it contains our key
 		if(tbl->slot[key].k != NULL) {
 			if(tbl->cmp(tbl->slot[key].k, k) == 0) {
 				return tbl->slot[key].v;
@@ -45,14 +59,21 @@ void* ht_lookup(hash_table tbl, void* k) {
 			return NULL;
 		}
 	}
+	//we didn't find anything
 	return NULL;
 }
 
+/*
+ *Insert into a hash table
+ */
 void ht_insert(hash_table tbl, void* k, void* v) {
 	unsigned int i, old_size, key = tbl->hash(k) % tbl->size;
 	struct pair* old_slot;
+	//for every possible slot in the hash table
 	for(i = 0; i < tbl->size; ++i) {
+		//quadratic probe to the correct slot
 		KEY_INC(key, i, tbl->size);
+		//if the slot is empty or it is occupied by our key, put ourkey and value in
 		if(tbl->slot[key].k == NULL) {
 			tbl->slot[key].k = k;
 			tbl->slot[key].v = v;
@@ -64,8 +85,11 @@ void ht_insert(hash_table tbl, void* k, void* v) {
 		}
 		
 	}
+	//increase the number of occupied slots
 	tbl->occupied++;
+	//if the load factor is above the threshold
 	if((double)tbl->occupied / (double)tbl->size > LOAD_FACTOR_THRESHOLD) {
+		//resize the table
 		old_slot = tbl->slot;
 		old_size = tbl->size;
 		tbl->slot = (struct pair*)calloc(tbl->size * 2, sizeof(struct pair));
@@ -102,6 +126,9 @@ void ht_remove(hash_table tbl, void* k) {
 }
 */
 
+/*
+ *Free a hash table
+ */
 void ht_free(hash_table tbl) {
 	int i;
 	for(i = 0; i < tbl->size; ++i) {
