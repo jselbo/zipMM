@@ -1,4 +1,5 @@
 #include "compress.h"
+#include "bstr.h"
 #include <arpa/inet.h>
 #include <stdint.h>
 #include <string.h>
@@ -7,7 +8,7 @@
 
 void compress(FILE* out, FILE* in, const char * name) {
 	char buffer[CHUNK_SIZE];
-	int count;
+	int count; int i;
 	int32_t fileSz = 0, nameSz = 0;
 	//writing the header
 	//1: Size of file name (4 bytes)
@@ -16,6 +17,28 @@ void compress(FILE* out, FILE* in, const char * name) {
 	//2: File name
 	fwrite(name, 1, strlen(name), out);
 	//TODO: Actually compress the file
+
+	//ht_alloc();
+
+	/* Initialize hash table with 0-255 ASCII chars */
+	/*
+	for(i=0;i<256;i++){
+		ht_insert(_hash_table, (char)i, i);	
+	}
+	*/
+
+	bstr bString;
+	char inputchar;
+
+	int string_code = getc(in);
+
+	/*
+	while((inputchar = getc(in)) != (unsigned)EOF){
+
+	}
+	*/
+
+
 	//3: Size of file content (4 bytes)
 	fseek(in, 0, SEEK_END);
 	fileSz = htonl(ftell(in));
